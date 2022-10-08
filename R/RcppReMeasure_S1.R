@@ -75,30 +75,23 @@ RcppReMeasure_Estimate_S1 = function(Zc1, Zt2, Zc2, Yc1, Yt2, Yc2, Index, tol.c 
 
 
 
-#' Our ReMeasure wrapped in RcppArmadillo method for batch effect elimination.
+#' The Rcpp Wrapper for batch.ReMeasure.S1 function for batch effect correction with remeasured samples.
 #'
-#' @param Y the response vector
-#' @param X binary vector indicate the control or treatment
-#' @param Z covariate matrix
+#' @param Y the response vector of control and case samples
+#' @param X binary vector indicates control/case status
+#' @param Z model matrix (sample x variable dimensions)
 #' @param ind.r index of remeasured samples
 #' @param Y.r the response vector of remeasured sample
 #'
-#' @return The estimated coefficient of MLE
-#' @export
+#' @return The estimates of parameters through optimizing a joint model.
+#' The parameters include true and batch effect, variances, correlation and time
 #'
 #' @examples
-#' n = 100
-#' n1 = 40
-#' r1 = 1
-#' r2 = 0.6
-#' a0 = 0.25
-#' a1 = 0.5
-#'
+#' n = 100; n1 = 50; r1 = 1; r2 = 0.6; a0 = 0.5; a1 = 0.5
+#' v1 = r1^2; v2 = 1
 #' X =  as.numeric(gl(2, n / 2)) - 1
 #' Z <- cbind(rep(1, n), rnorm(n))
 #' b <- c(0, -0.5)
-#' v1 = 2/(1+r1)
-#' v2 = r1 * v1
 #' Et <- rnorm(n, sd = ifelse (X == 0, sqrt(v1), sqrt(v2)))
 #' Y <- Z %*% b + cbind(X, X) %*% c(a0, a1) + Et
 #' Z.r.a <- Z[1 : (n / 2), ]
@@ -107,12 +100,15 @@ RcppReMeasure_Estimate_S1 = function(Zc1, Zt2, Zc2, Yc1, Yt2, Yc2, Index, tol.c 
 #' rnorm(n/2, sd = sqrt( (1 - r2^2) * v2 ) )
 #' ind.r <- 1:n1
 #' Y.r = Y.r.a[ind.r]
-#'
+#' # estimate the parameters
 #' Estimate = Rcpp.batch.ReMeasure.S1(Y, X, Z, ind.r, Y.r)
 #' Estimate$a0
 #' Estimate$a1
 #' Estimate$a0Var
 #' Estimate$p.value
+#'
+#' @export
+#'
 Rcpp.batch.ReMeasure.S1 = function(Y, X, Z, ind.r, Y.r) {
   ind0 <- X == 0
   ind1 <- X == 1
@@ -138,47 +134,10 @@ Rcpp.batch.ReMeasure.S1 = function(Y, X, Z, ind.r, Y.r) {
 }
 
 
-oneReplicate_ReMeasure_Rcpp = function(seedJ) {
-  set.seed(seedJ + repID * 300)
-  source("./oneReplicate/oneReplicate-New-S1.R")
-  Estimate = Rcpp.batch.ReMeasure.S1(Y, X, Z, ind.r, Y.r)
-
-  a0H = Estimate$a0
-  a0Var = Estimate$a0Var
-  a1H = Estimate$a1
-  betaH = Estimate$beta
-  rhoH = Estimate$rho
-  sigma1H = Estimate$sigma1
-  sigma2H = Estimate$sigma2
-  objVec = Estimate$objVec
-  Time = Estimate$Time
-
-  ind0 <- X == 0
-  ind1 <- X == 1
-  Yc1 <- Y[ind0]
-  Yt2 <- Y[ind1]
-  Zc1 <- Z[ind0, , drop = F]
-  Zt2 <- Z[ind1, , drop = F]
-  Zc2 = Zc1[ind.r, , drop = F]
-  Yc2 = Y.r
-
-  a0Var.ora = Oracle_Variance_a0(Zc1, Zt2, Zc2, Yc1, Yt2, Yc2, sqrt(v1),
-                                 sqrt(v2), r2, ind.r)
-  C = a0/sqrt(a0Var.ora)  # No sqrt(n) here
-  C1 = qnorm(alpha/2, lower.tail = TRUE) - C
-  C2 = qnorm(alpha/2, lower.tail = TRUE) + C
-  Power = pnorm(C1) + pnorm(C2)
-  return(list("a0" = a0H, "a0Var" = a0Var, "a1" = a1H, "sigma1" = sigma1H,
-              "sigma2" = sigma2H, "rho" = rhoH,
-              "beta" = betaH,"objVec" = objVec, "Time" = Time, "a0Var_ora" = a0Var.ora,
-              "Power" = Power))
-}
 
 
-oneReplicateWrap_ReMeasure_Rcpp = function(seedJ) {
-  eval = oneReplicate_ReMeasure_Rcpp(seedJ)
-  return(eval)
-}
+
+
 
 
 

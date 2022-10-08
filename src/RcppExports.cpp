@@ -6,6 +6,11 @@
 
 using namespace Rcpp;
 
+#ifdef RCPP_USE_GLOBAL_ROSTREAM
+Rcpp::Rostream<true>&  Rcpp::Rcout = Rcpp::Rcpp_cout_get();
+Rcpp::Rostream<false>& Rcpp::Rcerr = Rcpp::Rcpp_cerr_get();
+#endif
+
 // my_setdiff1
 arma::uvec my_setdiff1(arma::uvec& x, const arma::uvec& y);
 RcppExport SEXP _BatchReMeasure_my_setdiff1(SEXP xSEXP, SEXP ySEXP) {

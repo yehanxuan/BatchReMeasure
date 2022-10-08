@@ -2,26 +2,49 @@
 % Please edit documentation in R/Bootstrap.R
 \name{batch.ReMeasure.S1.pair}
 \alias{batch.ReMeasure.S1.pair}
-\title{Pair bootstrap method to estimate the uncertainty.}
+\title{Pair bootstrap method to estimate the uncertainty. Sample pairs are drawn
+with replacement from each group of different batches}
 \usage{
 batch.ReMeasure.S1.pair(Y, X, Z, ind.r, Y.r)
 }
 \arguments{
-\item{Y}{the response vector}
+\item{Y}{the response vector of control and case samples}
 
-\item{X}{binary vector indicate the control or treatment}
+\item{X}{binary vector indicates control/case status}
 
-\item{Z}{covariate matrix}
+\item{Z}{model matrix (sample x variable dimensions)}
 
 \item{ind.r}{index of remeasured samples}
 
 \item{Y.r}{the response vector of remeasured sample}
 }
 \value{
-The estimated coefficient and ztest statistic given by ReMeasure method and
-the pair boostrap statistic ztestb. One can use the statistic to
-estimate the power
+The estimated coefficients, z-test statistics provided by Remeasure method and pair bootstrap.
+The statistics can be used to estimate the power
 }
 \description{
-Pair bootstrap method to estimate the uncertainty.
+Pair bootstrap method to estimate the uncertainty. Sample pairs are drawn
+with replacement from each group of different batches
+}
+\examples{
+n = 100; n1 = 40; r1 = 1; r2 = 0.6; a0 = 0.8; a1 = 0.5
+v1 = r1^2; v2 = 1
+X =  as.numeric(gl(2, n / 2)) - 1
+Z <- cbind(rep(1, n), rnorm(n))
+b <- c(0, -0.5)
+Et <- rnorm(n, sd = ifelse (X == 0, sqrt(v1), sqrt(v2)))
+Y <- Z \%*\% b + cbind(X, X) \%*\% c(a0, a1) + Et
+Z.r.a <- Z[1 : (n / 2), ]
+Et.r.a <- Et[1 : (n / 2)]
+Y.r.a <- a1 + Z.r.a \%*\% b +
+ r2 * sqrt(v2) * Et.r.a/ sqrt(v1) + rnorm(n/2, sd = sqrt( (1 - r2^2) * v2 ) )
+ind.r <- 1:n1
+Y.r = Y.r.a[ind.r]
+
+boot = batch.ReMeasure.S1.pair(Y, X, Z, ind.r, Y.r)
+boot$a0
+boot$a0Var
+boot$a1
+boot$ztest
+boot$ztest_b
 }

@@ -2,16 +2,16 @@
 % Please edit documentation in R/PowerCal.R
 \name{Calculate_Power_S1}
 \alias{Calculate_Power_S1}
-\title{Power calculator}
+\title{Power calculator using the theoretical formula}
 \usage{
-Calculate_Power_S1(nc1, nt2, r1, r2, a0, a1, nc2, seedJ = 2)
+Calculate_Power_S1(nc1, nt2, r1, r2, a0, a1, nc2, alpha = 0.05, seedJ = 2)
 }
 \arguments{
-\item{nc1}{size of control sample in batch 1}
+\item{nc1}{size of control sample in the first batch}
 
-\item{nt2}{size of treatment sample in batch 2}
+\item{nt2}{size of treatment sample in the second batch}
 
-\item{r1}{scale effect that determines the variances}
+\item{r1}{scale effect that determines the variance of the first batch}
 
 \item{r2}{correlation parameter}
 
@@ -19,18 +19,20 @@ Calculate_Power_S1(nc1, nt2, r1, r2, a0, a1, nc2, seedJ = 2)
 
 \item{a1}{batch effect}
 
-\item{nc2}{remeasured control size of control sample}
+\item{nc2}{remeasured size of control sample}
 
-\item{seedJ}{choose the seed}
+\item{alpha}{the nominal level}
+
+\item{seedJ}{the seed}
 }
 \value{
-The power calculated from formula
+The power calculated from theoretical formula
 }
 \description{
-Power calculator
+Power calculator using the theoretical formula
 }
 \examples{
-alpha = 0.05
+alpha = 0.1
 Calculate_Power_S1(nc1 = 50, nt2 = 50, r1=0.5, r2=0.6, a0 = 0.5, a1 = 0.5,
-nc2 = 20)
+nc2 = 20, alpha = 0.1)
 }

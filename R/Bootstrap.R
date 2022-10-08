@@ -141,20 +141,41 @@ Estimate_ReMeasure_S1_Wild = function(Zc1, Zt2, Zc2, Yc1, Yt2, Yc2, Index, tol.c
 }
 
 
-#' Pair bootstrap method to estimate the uncertainty.
+#' Pair bootstrap method to estimate the uncertainty. Sample pairs are drawn
+#' with replacement from each group of different batches
 #'
-#' @param Y the response vector
-#' @param X binary vector indicate the control or treatment
-#' @param Z covariate matrix
+#' @param Y the response vector of control and case samples
+#' @param X binary vector indicates control/case status
+#' @param Z model matrix (sample x variable dimensions)
 #' @param ind.r index of remeasured samples
 #' @param Y.r the response vector of remeasured sample
 #'
-#' @return The estimated coefficient and ztest statistic given by ReMeasure method and
-#' the pair boostrap statistic ztestb. One can use the statistic to
-#' estimate the power
-#' @export
+#' @return The estimated coefficients, z-test statistics provided by Remeasure method and pair bootstrap.
+#' The statistics can be used to estimate the power
 #'
 #' @examples
+#' n = 100; n1 = 40; r1 = 1; r2 = 0.6; a0 = 0.8; a1 = 0.5
+#' v1 = r1^2; v2 = 1
+#' X =  as.numeric(gl(2, n / 2)) - 1
+#' Z <- cbind(rep(1, n), rnorm(n))
+#' b <- c(0, -0.5)
+#' Et <- rnorm(n, sd = ifelse (X == 0, sqrt(v1), sqrt(v2)))
+#' Y <- Z %*% b + cbind(X, X) %*% c(a0, a1) + Et
+#' Z.r.a <- Z[1 : (n / 2), ]
+#' Et.r.a <- Et[1 : (n / 2)]
+#' Y.r.a <- a1 + Z.r.a %*% b +
+#'  r2 * sqrt(v2) * Et.r.a/ sqrt(v1) + rnorm(n/2, sd = sqrt( (1 - r2^2) * v2 ) )
+#' ind.r <- 1:n1
+#' Y.r = Y.r.a[ind.r]
+#'
+#' boot = batch.ReMeasure.S1.pair(Y, X, Z, ind.r, Y.r)
+#' boot$a0
+#' boot$a0Var
+#' boot$a1
+#' boot$ztest
+#' boot$ztest_b
+#' @export
+#'
 batch.ReMeasure.S1.pair = function(Y, X, Z, ind.r, Y.r) {
   ind0 <- X == 0
   ind1 <- X == 1
@@ -182,19 +203,40 @@ batch.ReMeasure.S1.pair = function(Y, X, Z, ind.r, Y.r) {
 }
 
 #' Residual bootstrap method to estimate the uncertainty.
+#' The residuals are sampled with replacement and new bootstrap samples are generated
 #'
-#' @param Y the response vector
-#' @param X binary vector indicate the control or treatment
-#' @param Z covariate matrix
+#' @param Y the response vector of control and case samples
+#' @param X binary vector indicates control/case status
+#' @param Z model matrix (sample x variable dimensions)
 #' @param ind.r index of remeasured samples
 #' @param Y.r the response vector of remeasured sample
 #'
-#' @return The estimated coefficient and ztest statistic given by ReMeasure method and
-#' the residual boostrap statistic ztestb. One can use the statistic to
-#' estimate the power
-#' @export
+#' @return The estimated coefficients, z-test statistics provided by Remeasure method and residual bootstrap.
+#' The statistics can be used to estimate the power
 #'
 #' @examples
+#' n = 100; n1 = 40; r1 = 1; r2 = 0.6; a0 = 0.8; a1 = 0.5
+#' v1 = r1^2; v2 = 1
+#' X =  as.numeric(gl(2, n / 2)) - 1
+#' Z <- cbind(rep(1, n), rnorm(n))
+#' b <- c(0, -0.5)
+#' Et <- rnorm(n, sd = ifelse (X == 0, sqrt(v1), sqrt(v2)))
+#' Y <- Z %*% b + cbind(X, X) %*% c(a0, a1) + Et
+#' Z.r.a <- Z[1 : (n / 2), ]
+#' Et.r.a <- Et[1 : (n / 2)]
+#' Y.r.a <- a1 + Z.r.a %*% b +
+#' r2 * sqrt(v2) * Et.r.a/ sqrt(v1) + rnorm(n/2, sd = sqrt( (1 - r2^2) * v2 ) )
+#' ind.r <- 1:n1
+#' Y.r = Y.r.a[ind.r]
+#'
+#' boot = batch.ReMeasure.S1.res(Y, X, Z, ind.r, Y.r)
+#' boot$a0
+#' boot$a0Var
+#' boot$a1
+#' boot$ztest
+#' boot$ztest_b
+#' @export
+#'
 batch.ReMeasure.S1.res = function(Y, X, Z, ind.r, Y.r) {
   ind0 <- X == 0
   ind1 <- X == 1
@@ -224,19 +266,40 @@ batch.ReMeasure.S1.res = function(Y, X, Z, ind.r, Y.r) {
 
 
 #' Wild bootstrap method to estimate the uncertainty.
+#' We fix the covariates and generate independent Gaussian noise with the estimated variance
 #'
-#' @param Y the response vector
-#' @param X binary vector indicate the control or treatment
-#' @param Z covariate matrix
+#' @param Y the response vector of control and case samples
+#' @param X binary vector indicates control/case status
+#' @param Z model matrix (sample x variable dimensions)
 #' @param ind.r index of remeasured samples
 #' @param Y.r the response vector of remeasured sample
 #'
-#' @return The estimated coefficient and ztest statistic given by ReMeasure method and
-#' the wide boostrap statistic ztestb. One can use the statistic to
-#' estimate the power
-#' @export
+#' @return The estimated coefficients, z-test statistics provided by Remeasure method and wild bootstrap.
+#' The statistics can be used to estimate the power
 #'
 #' @examples
+#' n = 100; n1 = 40; r1 = 1; r2 = 0.6; a0 = 0.8; a1 = 0.5
+#' v1 = r1^2; v2 = 1
+#' X =  as.numeric(gl(2, n / 2)) - 1
+#' Z <- cbind(rep(1, n), rnorm(n))
+#' b <- c(0, -0.5)
+#' Et <- rnorm(n, sd = ifelse (X == 0, sqrt(v1), sqrt(v2)))
+#' Y <- Z %*% b + cbind(X, X) %*% c(a0, a1) + Et
+#' Z.r.a <- Z[1 : (n / 2), ]
+#' Et.r.a <- Et[1 : (n / 2)]
+#' Y.r.a <- a1 + Z.r.a %*% b +
+#' r2 * sqrt(v2) * Et.r.a/ sqrt(v1) + rnorm(n/2, sd = sqrt( (1 - r2^2) * v2 ) )
+#' ind.r <- 1:n1
+#' Y.r = Y.r.a[ind.r]
+#'
+#' boot = batch.ReMeasure.S1.wild(Y, X, Z, ind.r, Y.r)
+#' boot$a0
+#' boot$a0Var
+#' boot$a1
+#' boot$ztest
+#' boot$ztest_b
+#' @export
+#'
 batch.ReMeasure.S1.wild = function(Y, X, Z, ind.r, Y.r) {
   ind0 <- X == 0
   ind1 <- X == 1
@@ -264,80 +327,11 @@ batch.ReMeasure.S1.wild = function(Y, X, Z, ind.r, Y.r) {
 
 
 
-oneReplicate_Pair = function(seedJ){
-  set.seed(seedJ + repID * 300)
-  source("./oneReplicate/oneReplicate-New-S1.R")
-  Estimate = batch.ReMeasure.S1.pair(Y, X, Z, ind.r, Y.r)
-  a0H = Estimate$a0
-  a0Var = Estimate$a0Var ## variance (Not from bootstrap)
-  a1H = Estimate$a1
-  betaH = Estimate$beta
-  rhoH = Estimate$rho
-  sigma1H = Estimate$sigma1
-  sigma2H = Estimate$sigma2
-  objVec = Estimate$objVec
-  Time = Estimate$Time
-  ztest = Estimate$ztest
-  ztestb = Estimate$ztest_b
-  return(list("a0" = a0H, "a0Var" = a0Var, "a1" = a1H, "sigma1" = sigma1H,
-              "sigma2" = sigma2H, "rho" = rhoH,
-              "beta" = betaH,"objVec" = objVec, "Time" = Time, "ztest" = ztest, "ztestb" = ztestb))
-}
-
-oneReplicateWrap_Pair = function(seedJ) {
-  eval = oneReplicate_Pair(seedJ)
-  return(eval)
-}
 
 
-oneReplicate_Res = function(seedJ){
-  set.seed(seedJ + repID * 300)
-  source("./oneReplicate/oneReplicate-New-S1.R")
-  Estimate = batch.ReMeasure.S1.res(Y, X, Z, ind.r, Y.r)
-  a0H = Estimate$a0
-  a0Var = Estimate$a0Var ## variance (Not from bootstrap)
-  a1H = Estimate$a1
-  betaH = Estimate$beta
-  rhoH = Estimate$rho
-  sigma1H = Estimate$sigma1
-  sigma2H = Estimate$sigma2
-  objVec = Estimate$objVec
-  Time = Estimate$Time
-  ztest = Estimate$ztest
-  ztestb = Estimate$ztest_b
-  return(list("a0" = a0H, "a0Var" = a0Var, "a1" = a1H, "sigma1" = sigma1H,
-              "sigma2" = sigma2H, "rho" = rhoH,
-              "beta" = betaH,"objVec" = objVec, "Time" = Time, "ztest" = ztest, "ztestb" = ztestb))
-}
 
-oneReplicateWrap_Res = function(seedJ){
-  eval = oneReplicate_Res(seedJ)
-  return(eval)
-}
 
-oneReplicate_Wild = function(seedJ) {
-  set.seed(seedJ + repID * 300)
-  source("./oneReplicate/oneReplicate-New-S1.R")
-  Estimate = batch.ReMeasure.S1.wild(Y, X, Z, ind.r, Y.r)
-  a0H = Estimate$a0
-  a0Var = Estimate$a0Var ## variance (Not from bootstrap)
-  a1H = Estimate$a1
-  betaH = Estimate$beta
-  rhoH = Estimate$rho
-  sigma1H = Estimate$sigma1
-  sigma2H = Estimate$sigma2
-  objVec = Estimate$objVec
-  Time = Estimate$Time
-  ztest = Estimate$ztest
-  ztestb = Estimate$ztestb
-  return(list("a0" = a0H, "a0Var" = a0Var, "a1" = a1H, "sigma1" = sigma1H,
-              "sigma2" = sigma2H, "rho" = rhoH,
-              "beta" = betaH,"objVec" = objVec, "Time" = Time, "ztest" = ztest, "ztestb" = ztestb))
-}
 
-oneReplicateWrap_Wild = function(seedJ){
-  eval = oneReplicate_Wild(seedJ)
-  return(eval)
-}
+
 
 

@@ -2,25 +2,47 @@
 % Please edit documentation in R/Batch2Only.R
 \name{batch.Batch2.S1}
 \alias{batch.Batch2.S1}
-\title{Only consider the samples in batch 2}
+\title{Estimate the true effect and adjust for the batch effect only using the samples in the second batch}
 \usage{
 batch.Batch2.S1(Y, X, Z, ind.r, Y.r)
 }
 \arguments{
-\item{Y}{the response vector}
+\item{Y}{the response vector of control and case samples}
 
-\item{X}{binary vector indicate the control or treatment}
+\item{X}{binary vector indicates control/case status}
 
-\item{Z}{covariate matrix}
+\item{Z}{model matrix (sample x variable dimensions)}
 
-\item{ind.r}{index of remeasured sample points}
+\item{ind.r}{index of remeasured samples}
 
-\item{Y.r}{the response vector of remeasured sample}
+\item{Y.r}{the response vector of remeasured samples}
 }
 \value{
-The estimation of of parameters include true parameter,
-batch effect, variances and correlation
+The estimates of parameters including the true effect,
+batch effect, variances, correlation and computational time
 }
 \description{
-Only consider the samples in batch 2
+Estimate the true effect and adjust for the batch effect only using the samples in the second batch
+}
+\examples{
+
+n = 100; n1 = 40 ;r1 = 2; r2 = 0.6;a0 = 0.5; a1 = 0.5
+v1 = r1^2; v2 = 1
+X =  as.numeric(gl(2, n / 2)) - 1
+Z <- cbind(rep(1, n), rnorm(n))
+b <- c(0, -0.5)
+Et <- rnorm(n, sd = ifelse (X == 0, sqrt(v1), sqrt(v2)))
+Y <- Z \%*\% b + cbind(X, X) \%*\% c(a0, a1) + Et
+Z.r.a <- Z[1 : (n / 2), ]
+Et.r.a <- Et[1 : (n / 2)]
+Y.r.a <- a1 + Z.r.a \%*\% b +
+r2 * sqrt(v2) * Et.r.a/ sqrt(v1) + rnorm(n/2, sd = sqrt( (1 - r2^2) * v2 ) )
+ind.r <- 1:n1
+Y.r = Y.r.a[ind.r]
+# estimate the parameters
+Estimate = batch.Batch2.S1(Y, X, Z, ind.r, Y.r)
+Estimate$a0
+Estimate$a0Var
+Estimate$a1
+
 }

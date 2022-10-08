@@ -1,7 +1,6 @@
 # Need to consider which the level of X corresponds control/case
-require(lmvar)
-require(MASS)
-
+#require(lmvar)
+#require(MASS)
 loglik.r1 <- function (paras, Y, X, Z, ind.r, Y.r) {
 	n <- length(Y)
 	n1 <- length(ind.r)
@@ -30,20 +29,42 @@ loglik.r1 <- function (paras, Y, X, Z, ind.r, Y.r) {
 
 
 #' Generic maximum likelihood estimation. The objective is the same with remeasured method
-#' but the generic optimization methods are used like BFGS or conjugate gradient (CG)
+#' except that the generic optimization methods are used like BFGS or conjugate gradient (CG)
 #'
-#' @param Y the response vector
-#' @param X binary vector indicate the control or treatment
-#' @param Z covariate matrix
+#' @param Y the response vector of control and case samples
+#' @param X binary vector indicate the control or case
+#' @param Z model matrix (sample x variable dimensions)
 #' @param ind.r index of remeasured samples
-#' @param Y.r the response vector of remeasured sample
+#' @param Y.r the response vector of remeasured samples
 #' @param start the initial value of parameters, default is NULL
 #' @param method the optimization method chosen for the optimization, default is BFGS
 #'
 #' @return The estimated coefficient of MLE
-#' @export
 #'
 #' @examples
+#'
+#' # generate the data
+#' n = 100; n1 = 10 ;r1 = 1; r2 = 0.6;a0 = 0.8; a1 = 0.5
+#' v1 = r1^2; v2 = 1
+#' X =  as.numeric(gl(2, n / 2)) - 1
+#' Z <- cbind(rep(1, n), rnorm(n))
+#' b <- c(0, -0.5)
+#' Et <- rnorm(n, sd = ifelse (X == 0, sqrt(v1), sqrt(v2)))
+#' Y <- Z %*% b + cbind(X, X) %*% c(a0, a1) + Et
+#' Z.r.a <- Z[1 : (n / 2), ]
+#' Et.r.a <- Et[1 : (n / 2)]
+#' Y.r.a <- a1 + Z.r.a %*% b +
+#' r2 * sqrt(v2) * Et.r.a/ sqrt(v1) + rnorm(n/2, sd = sqrt( (1 - r2^2) * v2 ) )
+#' ind.r <- 1:n1
+#' Y.r = Y.r.a[ind.r]
+#' # estimate the parameters
+#' Estimate = batch.correct.r1(Y, X, Z, ind.r, Y.r)
+#' Estimate$a0
+#' Estimate$a0Var
+#' Estimate$a1
+#'
+#' @export
+#'
 batch.correct.r1 <- function (Y, X, Z, ind.r, Y.r, start = NULL, method = 'BFGS') {
 	# Z include the intercept
   # X treatment and case
@@ -124,73 +145,7 @@ batch.correct.r1.bt <- function (Y, X, Z, ind.r, Y.r, start = NULL, method = 'BF
 }
 
 
-find.ci.overlap.max <- function (est1, est1.se, est2, est2.se, est2.df) {
 
-	fun.tmp <- function (p, est1, est1.se, est2, est2.se, est2.df) {
-		if (est1 <= est2) {
-			ci1.right <- est1 +  abs(qnorm((1 - p) / 2)) * est1.se
-			ci2.left <- est2 - abs(qt((1 - p) / 2, df = est2.df)) * est2.se
-			return(ci1.right - ci2.left)
-		} else {
-			ci1.left  <- est1 - abs(qnorm((1 - p) / 2)) * est1.se
-			ci2.right <- est2  + abs(qt((1 - p) / 2, df = est2.df)) * est2.se
-			return(ci1.left - ci2.right)
-		}
-	}
-
-	return(uniroot(fun.tmp, c(0, 1), est1 = est1, est1.se = est1.se,
-					est2 = est2, est2.se = est2.se, est2.df = est2.df)$root)
-
-
-}
-
-
-is.ci.overlap <- function (est1, est1.se, est2, est2.se, est2.df, p = 0.95) {
-
-
-	if (est1 <= est2) {
-		ci1.right <- est1 +  abs(qnorm((1 - p) / 2)) * est1.se
-		ci2.left <- est2 - abs(qt((1 - p) / 2, df = est2.df)) * est2.se
-		return((ci1.right >= ci2.left))
-	} else {
-		ci1.left  <- est1 - abs(qnorm((1 - p) / 2)) * est1.se
-		ci2.right <- est2  + abs(qt((1 - p) / 2, df = est2.df)) * est2.se
-		return((ci2.right >=  ci1.left))
-	}
-
-
-}
-
-
-batch.correct.r1.naive3 <- function (Y, X, Z, ind.r, Y.r) {
-
-	X <- as.numeric(factor(X)) - 1
-
-	X.mu <- model.matrix( ~ X + Z - 1)
-	X.sigma <- model.matrix(~ X)
-	lm.obj <- lmvar(y = as.vector(Y), X_mu = X.mu, X_sigma = X.sigma, intercept_mu = FALSE, intercept_sigma = FALSE)
-
-	coeffs <- coef(summary(lm.obj))
-	est1 <- coeffs[1, 1]
-	est1.se <- coeffs[1, 2]
-
-	t.obj  <- t.test(Y.r, Y[ind.r], pair = TRUE)
-
-	est2 <- t.obj$estimate
-	est2.se <- t.obj$stderr
-	est2.df <- t.obj$parameter
-
-#	p <- find.ci.overlap.max(est1, est1.se, est2, est2.se, est2.df)
-#
-#	return(list(p.value = 1 - p^2))
-
-	if (is.ci.overlap(est1, est1.se, est2, est2.se, est2.df)) {
-		return(list(p.value = 0.01))
-	} else {
-		return(list(p.value = 0.1))
-	}
-
-}
 
 
 loglik.r2 <- function (paras, Y, X, Z, ind.r1, ind.r2, Y.r1, Y.r2) {
@@ -292,67 +247,5 @@ batch.correct.r2 <- function (Y, X, Z, ind.r1, ind.r2, Y.r1, Y.r2, start = NULL,
 }
 
 
-oneReplicate_Gen = function(seedJ){
-  set.seed(seedJ + repID * 300)
-  source("./oneReplicate/oneReplicate-New-S1.R")
-  Estimate = batch.correct.r1(Y, X, Z, ind.r, Y.r)
-  a0H = Estimate$a0
-  a0Var = Estimate$a0Var
-  a1H = Estimate$a1
-  betaH = Estimate$beta
-  rhoH = Estimate$rho
-  sigma1H = Estimate$sigma1
-  sigma2H = Estimate$sigma2
-  objVec = Estimate$objVec
-  Time = Estimate$Time
-  return(list("a0" = a0H, "a0Var" = a0Var, "a1" = a1H, "sigma1" = sigma1H,
-              "sigma2" = sigma2H, "rho" = rhoH,
-              "beta" = betaH,"objVec" = objVec, "Time" = Time))
-}
-
-oneReplicateWrap_Gen = function(seedJ) {
-  eval =  try( oneReplicate_Gen(seedJ) )
-  return(eval)
-}
-
-oneReplicate_Gen_S2 = function(seedJ) {
-  set.seed(seedJ + repID * 300)
-  source("./oneReplicate/oneReplicate-New-S2.R")
-  Estimate = batch.correct.r2(Y, X, Z, ind.r1, ind.r2, Y.r1, Y.r2)
-  a0H = Estimate$a0
-  a0Var = Estimate$a0Var
-  a1H = Estimate$a1
-  a3H = Estimate$a3
-  betaH = Estimate$beta
-  sigma1H = Estimate$sigma1
-  sigma2H = Estimate$sigma2
-  sigma3H = Estimate$sigma3
-  rho1H = Estimate$rho1
-  rho2H = Estimate$rho2
-  objVec = Estimate$objVec
-  Time = Estimate$Time
-  pv <- Estimate$p.value
-  return(list("a0" = a0H, "a0Var" = a0Var, "a1" = a1H, "a3" = a3H,
-              "sigma1" = sigma1H, "sigma2" = sigma2H, "sigma3" = sigma3H,
-              "rho1" = rho1H, "rho2" = rho2H,
-              "beta"= betaH, "objVec" = objVec, "Time" = Time, "p.value" = pv))
-}
 
 
-oneReplicateWrap_Gen_S2 = function(seedJ) {
-  eval = oneReplicate_Gen_S2(seedJ)
-  return(eval)
-}
-#require(lmvar); require(MASS)
-#X = model.matrix(~ Bwt - 1, cats)
-#
-## Carry out the fit with the same model matrix for mu (the expected heart weight) and for log sigma (the standard deviation)
-#fit = lmvar(cats$Hwt, X_mu = X, X_sigma = X)
-
-
-require(utils) # for str
-
-## some platforms hit zero exactly on the first step:
-## if so the estimated precision is 2/3.
-# f <- function (x, a) x - a
-# str(xmin <- uniroot(f, c(0, 1), tol = 0.0001, a = 1/3))

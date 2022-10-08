@@ -45,46 +45,41 @@ Estimate_OnlyBatch2 = function(Zt2, Zc2, Yt2, Yc2) {
 }
 
 
-oneReplicate_OnlyBatch2 = function(seedJ) {
-  set.seed(seedJ + repID * 300)
-  # source("./oneReplicate/oneReplicate-S1.R")
-  # Estimate = Estimate_OnlyBatch2(Zt2, Zc2, Yt2, Yc2)
-  source("./oneReplicate/oneReplicate-New-S1.R")
-  Estimate = batch.Batch2.S1(Y, X, Z, ind.r, Y.r)
-  a0H = Estimate$a0
-  a0Var = Estimate$a0Var
-  a1H = Estimate$a1
-  betaH = Estimate$beta
-  sigma1H = NULL
-  sigma2H = Estimate$sigma2
-  rhoH = NULL
-  objVec = NULL
-  Time = Estimate$Time
-  return(list("a0" = a0H, "a0Var" = a0Var, "a1" = a1H, "sigma1" = sigma1H,
-              "sigma2" = sigma2H, "rho" =  rhoH, "beta" = betaH, "objVec" = objVec, "Time" = Time))
-}
 
-
-oneReplicateWrap_OnlyBatch2 = function(seedJ) {
-  eval = oneReplicate_OnlyBatch2(seedJ)
-  return(eval)
-}
-
-
-
-#' Only consider the samples in batch 2
+#' Estimate the true effect and adjust for the batch effect only using the samples in the second batch
 #'
-#' @param Y the response vector
-#' @param X binary vector indicate the control or treatment
-#' @param Z covariate matrix
-#' @param ind.r index of remeasured sample points
-#' @param Y.r the response vector of remeasured sample
+#' @param Y the response vector of control and case samples
+#' @param X binary vector indicates control/case status
+#' @param Z model matrix (sample x variable dimensions)
+#' @param ind.r index of remeasured samples
+#' @param Y.r the response vector of remeasured samples
 #'
-#' @return The estimation of of parameters include true parameter,
-#' batch effect, variances and correlation
-#' @export
+#' @return The estimates of parameters including the true effect,
+#' batch effect, variances, correlation and computational time
 #'
 #' @examples
+#'
+#' n = 100; n1 = 40 ;r1 = 2; r2 = 0.6;a0 = 0.5; a1 = 0.5
+#' v1 = r1^2; v2 = 1
+#' X =  as.numeric(gl(2, n / 2)) - 1
+#' Z <- cbind(rep(1, n), rnorm(n))
+#' b <- c(0, -0.5)
+#' Et <- rnorm(n, sd = ifelse (X == 0, sqrt(v1), sqrt(v2)))
+#' Y <- Z %*% b + cbind(X, X) %*% c(a0, a1) + Et
+#' Z.r.a <- Z[1 : (n / 2), ]
+#' Et.r.a <- Et[1 : (n / 2)]
+#' Y.r.a <- a1 + Z.r.a %*% b +
+#' r2 * sqrt(v2) * Et.r.a/ sqrt(v1) + rnorm(n/2, sd = sqrt( (1 - r2^2) * v2 ) )
+#' ind.r <- 1:n1
+#' Y.r = Y.r.a[ind.r]
+#' # estimate the parameters
+#' Estimate = batch.Batch2.S1(Y, X, Z, ind.r, Y.r)
+#' Estimate$a0
+#' Estimate$a0Var
+#' Estimate$a1
+#'
+#' @export
+#'
 batch.Batch2.S1 = function(Y, X, Z, ind.r, Y.r) {
 
   ind0 <- X == 0

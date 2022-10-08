@@ -2,40 +2,34 @@
 % Please edit documentation in R/RcppReMeasure_S1.R
 \name{Rcpp.batch.ReMeasure.S1}
 \alias{Rcpp.batch.ReMeasure.S1}
-\title{Our ReMeasure wrapped in RcppArmadillo method for batch effect elimination.}
+\title{The Rcpp Wrapper for batch.ReMeasure.S1 function for batch effect correction with remeasured samples.}
 \usage{
 Rcpp.batch.ReMeasure.S1(Y, X, Z, ind.r, Y.r)
 }
 \arguments{
-\item{Y}{the response vector}
+\item{Y}{the response vector of control and case samples}
 
-\item{X}{binary vector indicate the control or treatment}
+\item{X}{binary vector indicates control/case status}
 
-\item{Z}{covariate matrix}
+\item{Z}{model matrix (sample x variable dimensions)}
 
 \item{ind.r}{index of remeasured samples}
 
 \item{Y.r}{the response vector of remeasured sample}
 }
 \value{
-The estimated coefficient of MLE
+The estimates of parameters through optimizing a joint model.
+The parameters include true and batch effect, variances, correlation and time
 }
 \description{
-Our ReMeasure wrapped in RcppArmadillo method for batch effect elimination.
+The Rcpp Wrapper for batch.ReMeasure.S1 function for batch effect correction with remeasured samples.
 }
 \examples{
-n = 100
-n1 = 40
-r1 = 1
-r2 = 0.6
-a0 = 0.25
-a1 = 0.5
-
+n = 100; n1 = 50; r1 = 1; r2 = 0.6; a0 = 0.5; a1 = 0.5
+v1 = r1^2; v2 = 1
 X =  as.numeric(gl(2, n / 2)) - 1
 Z <- cbind(rep(1, n), rnorm(n))
 b <- c(0, -0.5)
-v1 = 2/(1+r1)
-v2 = r1 * v1
 Et <- rnorm(n, sd = ifelse (X == 0, sqrt(v1), sqrt(v2)))
 Y <- Z \%*\% b + cbind(X, X) \%*\% c(a0, a1) + Et
 Z.r.a <- Z[1 : (n / 2), ]
@@ -44,10 +38,11 @@ Y.r.a <- a1 + Z.r.a \%*\% b + r2 * sqrt(v2) * Et.r.a/ sqrt(v1) +
 rnorm(n/2, sd = sqrt( (1 - r2^2) * v2 ) )
 ind.r <- 1:n1
 Y.r = Y.r.a[ind.r]
-
+# estimate the parameters
 Estimate = Rcpp.batch.ReMeasure.S1(Y, X, Z, ind.r, Y.r)
 Estimate$a0
 Estimate$a1
 Estimate$a0Var
 Estimate$p.value
+
 }

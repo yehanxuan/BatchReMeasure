@@ -1,23 +1,24 @@
 
-#' Power calculator
+#' Power calculator using the theoretical formula
 #'
-#' @param nc1 size of control sample in batch 1
-#' @param nt2 size of treatment sample in batch 2
-#' @param r1 scale effect that determines the variances
+#' @param nc1 size of control sample in the first batch
+#' @param nt2 size of treatment sample in the second batch
+#' @param r1 scale effect that determines the variance of the first batch
 #' @param r2 correlation parameter
 #' @param a0 true effect
 #' @param a1 batch effect
-#' @param nc2 remeasured control size of control sample
-#' @param seedJ choose the seed
+#' @param nc2 remeasured size of control sample
+#' @param alpha the nominal level
+#' @param seedJ the seed
 #'
-#' @return The power calculated from formula
-#' @export
+#' @return The power calculated from theoretical formula
 #'
 #' @examples
-#' alpha = 0.05
+#' alpha = 0.1
 #' Calculate_Power_S1(nc1 = 50, nt2 = 50, r1=0.5, r2=0.6, a0 = 0.5, a1 = 0.5,
-#' nc2 = 20)
-Calculate_Power_S1 = function(nc1, nt2, r1, r2, a0, a1, nc2, seedJ = 2 ){
+#' nc2 = 20, alpha = 0.1)
+#' @export
+Calculate_Power_S1 = function(nc1, nt2, r1, r2, a0, a1, nc2, alpha = 0.05,seedJ = 2 ){
 
   set.seed(seedJ)
   n = nc1 + nt2
@@ -25,8 +26,8 @@ Calculate_Power_S1 = function(nc1, nt2, r1, r2, a0, a1, nc2, seedJ = 2 ){
   Z <- cbind(rep(1, n), rnorm(n))
   b <- c(0, -0.5)
 
-  v1 = 2/(1+r1)
-  v2 = r1 * v1
+  v1 = r1^2
+  v2 = 1
   Et <- rnorm(n, sd = ifelse (X == 0, sqrt(v1), sqrt(v2)))
   Y <- Z %*% b + cbind(X, X) %*% c(a0, a1) + Et
 
@@ -57,32 +58,6 @@ Calculate_Power_S1 = function(nc1, nt2, r1, r2, a0, a1, nc2, seedJ = 2 ){
   return(Power)
 }
 
-oneReplicate_theory = function(seedJ) {
-  set.seed(seedJ + repID * 300)
-  source("./oneReplicate/oneReplicate-New-S1.R")
-  ind0 <- X == 0
-  ind1 <- X == 1
-  Yc1 <- Y[ind0]
-  Yt2 <- Y[ind1]
-  Zc1 <- Z[ind0, , drop = F]
-  Zt2 <- Z[ind1, , drop = F]
-  Zc2 = Zc1[ind.r, , drop = F]
-  Yc2 = Y.r
-
-  a0Var = Oracle_Variance_a0(Zc1, Zt2, Zc2, Yc1, Yt2, Yc2, sqrt(v1), sqrt(v2), r2, ind.r)
-  # C = sqrt(n)*a0/sqrt(a0Var)
-  C = a0/sqrt(a0Var)
-  C1 = qnorm(alpha/2, lower.tail = TRUE) - C
-  C2 = qnorm(alpha/2, lower.tail = TRUE) + C
-  Power = pnorm(C1) + pnorm(C2)
-  return("Power" = Power)
-}
-
-
-oneReplicateWrap_theory = function(seedJ) {
-  eval = oneReplicate_theory(seedJ)
-  return(eval)
-}
 
 
 Calculate_Power_S2 = function(nc1, nt2, r1, r2, r3, a0, a1, a3, nc3, nt3, seedJ = 2){
