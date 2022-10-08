@@ -1,13 +1,20 @@
 Package: BatchReMeasure
 Type: Package
 Title: Batch effect correction 
-Version: 1.0
-Author: Hanxuan Ye
+Version: 0.1.0
+Author@R: c(person("Hanxuan", "Ye", role = c("aut", "cre"),
+          email = "hanxuan@tamu.edu"),
+          person("Xianyang", "Zhang", role = "aut",
+          email = "zhangxiany@stat.tamu.edu"),
+          person("Jun", "Chen", role = "ctb", 
+          email = "Chen.Jun2@mayo.edu"))
+Author: Hanxuan Ye, Xianyang Zhang, Jun Chen
 Maintainer: Hanxuan Ye <hanxuan@tamu.edu>
 Description: Batch effect correction through remeasurement for linear model
-License: GNU GPLv3
+License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
+LazyDataCompression:xz
 Imports: Rcpp (>= 1.0.5), MASS, lmvar, utils, RConics, stats
 LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 7.2.1

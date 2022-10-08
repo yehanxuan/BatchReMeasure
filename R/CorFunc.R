@@ -113,40 +113,6 @@ batch.correct.r1 <- function (Y, X, Z, ind.r, Y.r, start = NULL, method = 'BFGS'
 	            "sigma2" = sigma2H, "rho" = rhoH, "beta" = NULL, "objVec" = NULL, "Time" = Time_S1))
 }
 
-batch.correct.r1.bt <- function (Y, X, Z, ind.r, Y.r, start = NULL, method = 'BFGS', B = 50) {
-	# Z include the intercept
-	call <- match.call()
-
-	obj <- batch.correct.r1(Y, X, Z, ind.r, Y.r, start, method)
-	stat <- obj$stat
-	stat.b <- NULL
-	for (b in 1 : B) {
-		ind <- sample(1 : length(Y.r), repl = TRUE)
-		ind.r.b <- ind.r[ind]
-		Y.r.b <- Y.r[ind]
-		ind.nr.b <- sample(setdiff(1 : length(Y), ind.r), repl = TRUE)
-		ind.b <- c(ind.r.b, ind.nr.b)
-		Y.b <- Y[ind.b]
-		X.b <- X[ind.b]
-		Z.b <- Z[ind.b, , drop = FALSE]
-
-		try.obj <- try(obj.b <- batch.correct.r1(Y.b, X.b, Z.b, 1 : length(Y.r), Y.r.b, start = obj$optim.out$par, method))
-		if (class(try.obj) != 'try-error') {
-			if (!is.na(obj.b$stat) ) {
-				stat.b <- c(stat.b, obj.b$stat)
-			}
-		}
-	}
-	pv <- 2 * stats::pnorm(-abs(stat), sd = sd(stat.b))
-
-
-	return(list(call = call, stat = stat, p.value = pv))
-
-}
-
-
-
-
 
 loglik.r2 <- function (paras, Y, X, Z, ind.r1, ind.r2, Y.r1, Y.r2) {
 	n <- length(Y)
