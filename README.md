@@ -49,13 +49,30 @@ Y.r.a <- a1 + Z.r.a %*% b + r2 * sqrt(v2) * Et.r.a/ sqrt(v1) + rnorm(n/2, sd = s
 ind.r <- 1:n1
 Y.r = Y.r.a[ind.r]
 ```
-Now we conduct batch effect correction with remeasurement
+Since the batch effects and the biological effects are indistinguishable in this example, we conduct batch effect correction with remeasurement
 ```{r}
 Estimate = batch.ReMeasure.S1(Y, X, Z, ind.r, Y.r)
 a0H = Estimate$a0
 a0Var = Estimate$a0Var
 a1H = Estimate$a1
 ```
+The package also includes functions that only consider case and remeasured control samples in the second batch
+```{r}
+Estimate = batch.Batch2.S1(Y, X, Z, ind.r, Y.r)
+```
+If we ignore the batch effect, simply run
+```{r}
+Estimate = batch.Ignore.S1(Y, X, Z, ind.r, Y.r)
+```
+The bootstrap method is also provided to improve the estimation of uncertainty
+```{r}
+# The residual bootstrap 
+boot = batch.ReMeasure.S1.res(Y, X, Z, ind.r, Y.r)
+boot$ztest
+boot$ztest_b
+```
+
+
 
 # References 
 Eddelbuettel, Dirk, and Conrad Sanderson (2014). "RcppArmadillo: Accelerating R with high-performance C++ linear algebra." Computational Statistics & Data Analysis 71: 1054-1063.
