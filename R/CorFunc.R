@@ -94,7 +94,7 @@ batch.correct.r1 <- function (Y, X, Z, ind.r, Y.r, start = NULL, method = 'BFGS'
 				pv <- 2 * stats::pnorm(-abs(stat))
 	#			pv <- 2 * stats::pt(-abs(coef[1] / sqrt(vcov[1, 1])), df = length(ind.r) + sum(X == 1) - ncol(Z))
 			})
-    if (class(try.obj) == 'try-error') {
+    if (inherits(try.obj, 'try-error')) {
 		stat <- NA
 		pv <- NA
     }
@@ -192,7 +192,7 @@ batch.correct.r2 <- function (Y, X, Z, ind.r1, ind.r2, Y.r1, Y.r2, start = NULL,
 	try.obj <- try({	vcov <- solve(oout$hessian)
 				pv <- 2 * stats::pnorm(-abs(coef[1] / sqrt(vcov[1, 1])))
 			})
-	if (class(try.obj) == 'try-error') {
+	if (inherits(try.obj, 'try-error')) {
 		pv <- NA
 	}
 	a0H = as.numeric(coef[1])

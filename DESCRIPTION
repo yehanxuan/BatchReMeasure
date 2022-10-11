@@ -1,8 +1,8 @@
 Package: BatchReMeasure
 Type: Package
-Title: Batch effect correction 
+Title: Batch Effect Correction 
 Version: 0.1.0
-Author@R: c(person("Hanxuan", "Ye", role = c("aut", "cre"),
+Authors@R: c(person("Hanxuan", "Ye", role = c("aut", "cre"),
           email = "hanxuan@tamu.edu"),
           person("Xianyang", "Zhang", role = "aut",
           email = "zhangxiany@stat.tamu.edu"),
