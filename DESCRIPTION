@@ -14,7 +14,7 @@ Description: Batch effect correction through remeasurement for linear model.
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyData: true
-LazyDataCompression:xz
+LazyDataCompression:gzip
 Imports: Rcpp (>= 1.0.5), MASS, lmvar, utils, RConics, stats
 LinkingTo: Rcpp, RcppArmadillo
 RoxygenNote: 7.2.1

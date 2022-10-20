@@ -7,9 +7,9 @@
 Calculate_Power_S1(nc1, nt2, r1, r2, a0, a1, nc2, alpha = 0.05, seedJ = 2)
 }
 \arguments{
-\item{nc1}{size of control sample in the first batch}
+\item{nc1}{size of control samples in the first batch}
 
-\item{nt2}{size of treatment sample in the second batch}
+\item{nt2}{size of treatment samples in the second batch}
 
 \item{r1}{scale effect that determines the variance of the first batch}
 

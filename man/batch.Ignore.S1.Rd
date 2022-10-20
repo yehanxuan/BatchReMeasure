@@ -7,11 +7,12 @@
 batch.Ignore.S1(Y, X, Z)
 }
 \arguments{
-\item{Y}{the response vector of control and case samples}
+\item{Y}{the response vector for both control and case samples}
 
-\item{X}{binary vector indicates control/case status}
+\item{X}{binary vector indicates control/case status.
+X = 0 represents control, X = 1 represents case}
 
-\item{Z}{model matrix (sample x variable dimensions)}
+\item{Z}{model matrix (sample x variable dimensions) consists of covariates that affect the responses}
 }
 \value{
 The estimates of coefficients
@@ -24,10 +25,10 @@ Direct estimate the true effect and batch effect ignoring the batch effect
 n = 100; r1 = 2; r2 = 0.6;a0 = 0.5; a1 = 0.5
 v1 = r1^2; v2 = 1
 X =  as.numeric(gl(2, n / 2)) - 1
-Z <- cbind(rep(1, n), rnorm(n))
-b <- c(0, -0.5)
-Et <- rnorm(n, sd = ifelse (X == 0, sqrt(v1), sqrt(v2)))
-Y <- Z \%*\% b + cbind(X, X) \%*\% c(a0, a1) + Et
+Z = cbind(rep(1, n), rnorm(n))
+b = c(0, -0.5)
+Et = rnorm(n, sd = ifelse (X == 0, sqrt(v1), sqrt(v2)))
+Y = Z \%*\% b + cbind(X, X) \%*\% c(a0, a1) + Et
 # estimate the parameters
 res = batch.Ignore.S1(Y, X, Z)
 res$a0

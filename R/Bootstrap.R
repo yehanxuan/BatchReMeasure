@@ -144,28 +144,32 @@ Estimate_ReMeasure_S1_Wild = function(Zc1, Zt2, Zc2, Yc1, Yt2, Yc2, Index, tol.c
 #' Pair bootstrap method to estimate the uncertainty. Sample pairs are drawn
 #' with replacement from each group of different batches
 #'
-#' @param Y the response vector of control and case samples
-#' @param X binary vector indicates control/case status
-#' @param Z model matrix (sample x variable dimensions)
-#' @param ind.r index of remeasured samples
-#' @param Y.r the response vector of remeasured sample
+#' @param Y the response vector for both control and case samples
+#' @param X binary vector indicates control/case status.
+#' X = 0 represents control, X = 1 represents case
+#' @param Z model matrix (sample x variable dimensions) consists of covariates that affect the response
+#' @param ind.r index for samples remeasured from control samples in the first batch.
+#' The length of the index should be less or equal to the sample size of control samples in the first batch
+#' @param Y.r the response vector of remeasured sample.
+#' Due to batch effects, it is usually not equal to the responses of corresponding control samples in the first batch
 #'
 #' @return The estimated coefficients, z-test statistics provided by Remeasure method and pair bootstrap.
+#'
 #' The statistics can be used to estimate the power
 #'
 #' @examples
 #' n = 100; n1 = 40; r1 = 1; r2 = 0.6; a0 = 0.8; a1 = 0.5
 #' v1 = r1^2; v2 = 1
 #' X =  as.numeric(gl(2, n / 2)) - 1
-#' Z <- cbind(rep(1, n), rnorm(n))
-#' b <- c(0, -0.5)
-#' Et <- rnorm(n, sd = ifelse (X == 0, sqrt(v1), sqrt(v2)))
-#' Y <- Z %*% b + cbind(X, X) %*% c(a0, a1) + Et
-#' Z.r.a <- Z[1 : (n / 2), ]
-#' Et.r.a <- Et[1 : (n / 2)]
-#' Y.r.a <- a1 + Z.r.a %*% b +
+#' Z = cbind(rep(1, n), rnorm(n))
+#' b = c(0, -0.5)
+#' Et = rnorm(n, sd = ifelse (X == 0, sqrt(v1), sqrt(v2)))
+#' Y = Z %*% b + cbind(X, X) %*% c(a0, a1) + Et
+#' Z.r.a = Z[1 : (n / 2), ]
+#' Et.r.a = Et[1 : (n / 2)]
+#' Y.r.a = a1 + Z.r.a %*% b +
 #'  r2 * sqrt(v2) * Et.r.a/ sqrt(v1) + rnorm(n/2, sd = sqrt( (1 - r2^2) * v2 ) )
-#' ind.r <- 1:n1
+#' ind.r = 1:n1
 #' Y.r = Y.r.a[ind.r]
 #'
 #' boot = batch.ReMeasure.S1.pair(Y, X, Z, ind.r, Y.r)
@@ -177,12 +181,12 @@ Estimate_ReMeasure_S1_Wild = function(Zc1, Zt2, Zc2, Yc1, Yt2, Yc2, Index, tol.c
 #' @export
 #'
 batch.ReMeasure.S1.pair = function(Y, X, Z, ind.r, Y.r) {
-  ind0 <- X == 0
-  ind1 <- X == 1
-  Yc1 <- Y[ind0]
-  Yt2 <- Y[ind1]
-  Zc1 <- Z[ind0, , drop = F]
-  Zt2 <- Z[ind1, , drop = F]
+  ind0 = X == 0
+  ind1 = X == 1
+  Yc1 = Y[ind0]
+  Yt2 = Y[ind1]
+  Zc1 = Z[ind0, , drop = F]
+  Zt2 = Z[ind1, , drop = F]
 
   Zc2 = Zc1[ind.r, , drop = F]
   Yc2 = Y.r
@@ -205,11 +209,14 @@ batch.ReMeasure.S1.pair = function(Y, X, Z, ind.r, Y.r) {
 #' Residual bootstrap method to estimate the uncertainty.
 #' The residuals are sampled with replacement and new bootstrap samples are generated
 #'
-#' @param Y the response vector of control and case samples
-#' @param X binary vector indicates control/case status
-#' @param Z model matrix (sample x variable dimensions)
-#' @param ind.r index of remeasured samples
-#' @param Y.r the response vector of remeasured sample
+#' @param Y the response vector for both control and case samples
+#' @param X binary vector indicates control/case status.
+#' X = 0 represents control, X = 1 represents case
+#' @param Z model matrix (sample x variable dimensions) consists of covariates that affect the response
+#' @param ind.r index for samples remeasured from control samples in the first batch.
+#' The length of the index should be less or equal to the sample size of control samples in the first batch
+#' @param Y.r the response vector of remeasured samples.
+#' Due to batch effects, it is usually not equal to the responses of corresponding control samples in the first batch
 #'
 #' @return The estimated coefficients, z-test statistics provided by Remeasure method and residual bootstrap.
 #' The statistics can be used to estimate the power
@@ -218,15 +225,15 @@ batch.ReMeasure.S1.pair = function(Y, X, Z, ind.r, Y.r) {
 #' n = 100; n1 = 40; r1 = 1; r2 = 0.6; a0 = 0.8; a1 = 0.5
 #' v1 = r1^2; v2 = 1
 #' X =  as.numeric(gl(2, n / 2)) - 1
-#' Z <- cbind(rep(1, n), rnorm(n))
-#' b <- c(0, -0.5)
-#' Et <- rnorm(n, sd = ifelse (X == 0, sqrt(v1), sqrt(v2)))
-#' Y <- Z %*% b + cbind(X, X) %*% c(a0, a1) + Et
-#' Z.r.a <- Z[1 : (n / 2), ]
-#' Et.r.a <- Et[1 : (n / 2)]
-#' Y.r.a <- a1 + Z.r.a %*% b +
+#' Z = cbind(rep(1, n), rnorm(n))
+#' b = c(0, -0.5)
+#' Et = rnorm(n, sd = ifelse (X == 0, sqrt(v1), sqrt(v2)))
+#' Y = Z %*% b + cbind(X, X) %*% c(a0, a1) + Et
+#' Z.r.a = Z[1 : (n / 2), ]
+#' Et.r.a = Et[1 : (n / 2)]
+#' Y.r.a = a1 + Z.r.a %*% b +
 #' r2 * sqrt(v2) * Et.r.a/ sqrt(v1) + rnorm(n/2, sd = sqrt( (1 - r2^2) * v2 ) )
-#' ind.r <- 1:n1
+#' ind.r = 1:n1
 #' Y.r = Y.r.a[ind.r]
 #'
 #' boot = batch.ReMeasure.S1.res(Y, X, Z, ind.r, Y.r)
@@ -238,12 +245,12 @@ batch.ReMeasure.S1.pair = function(Y, X, Z, ind.r, Y.r) {
 #' @export
 #'
 batch.ReMeasure.S1.res = function(Y, X, Z, ind.r, Y.r) {
-  ind0 <- X == 0
-  ind1 <- X == 1
-  Yc1 <- Y[ind0]
-  Yt2 <- Y[ind1]
-  Zc1 <- Z[ind0, , drop = F]
-  Zt2 <- Z[ind1, , drop = F]
+  ind0 = X == 0
+  ind1 = X == 1
+  Yc1 = Y[ind0]
+  Yt2 = Y[ind1]
+  Zc1 = Z[ind0, , drop = F]
+  Zt2 = Z[ind1, , drop = F]
 
   Zc2 = Zc1[ind.r, , drop = F]
   Yc2 = Y.r
@@ -268,11 +275,14 @@ batch.ReMeasure.S1.res = function(Y, X, Z, ind.r, Y.r) {
 #' Wild bootstrap method to estimate the uncertainty.
 #' We fix the covariates and generate independent Gaussian noise with the estimated variance
 #'
-#' @param Y the response vector of control and case samples
-#' @param X binary vector indicates control/case status
-#' @param Z model matrix (sample x variable dimensions)
-#' @param ind.r index of remeasured samples
-#' @param Y.r the response vector of remeasured sample
+#' @param Y the response vector for both control and case samples
+#' @param X binary vector indicates control/case status.
+#' X = 0 represents control, X = 1 represents case
+#' @param Z model matrix (sample x variable dimensions) consists of covariates that affect the response
+#' @param ind.r index for samples remeasured from control samples in the first batch.
+#' The length of the index should be less or equal to the sample size of control samples in the first batch
+#' @param Y.r the response vector of remeasured samples.
+#' Due to batch effects, it is usually not equal to the responses of corresponding control samples in the first batch
 #'
 #' @return The estimated coefficients, z-test statistics provided by Remeasure method and wild bootstrap.
 #' The statistics can be used to estimate the power
@@ -281,15 +291,15 @@ batch.ReMeasure.S1.res = function(Y, X, Z, ind.r, Y.r) {
 #' n = 100; n1 = 40; r1 = 1; r2 = 0.6; a0 = 0.8; a1 = 0.5
 #' v1 = r1^2; v2 = 1
 #' X =  as.numeric(gl(2, n / 2)) - 1
-#' Z <- cbind(rep(1, n), rnorm(n))
-#' b <- c(0, -0.5)
-#' Et <- rnorm(n, sd = ifelse (X == 0, sqrt(v1), sqrt(v2)))
-#' Y <- Z %*% b + cbind(X, X) %*% c(a0, a1) + Et
-#' Z.r.a <- Z[1 : (n / 2), ]
-#' Et.r.a <- Et[1 : (n / 2)]
-#' Y.r.a <- a1 + Z.r.a %*% b +
+#' Z = cbind(rep(1, n), rnorm(n))
+#' b = c(0, -0.5)
+#' Et = rnorm(n, sd = ifelse (X == 0, sqrt(v1), sqrt(v2)))
+#' Y = Z %*% b + cbind(X, X) %*% c(a0, a1) + Et
+#' Z.r.a = Z[1 : (n / 2), ]
+#' Et.r.a = Et[1 : (n / 2)]
+#' Y.r.a = a1 + Z.r.a %*% b +
 #' r2 * sqrt(v2) * Et.r.a/ sqrt(v1) + rnorm(n/2, sd = sqrt( (1 - r2^2) * v2 ) )
-#' ind.r <- 1:n1
+#' ind.r = 1:n1
 #' Y.r = Y.r.a[ind.r]
 #'
 #' boot = batch.ReMeasure.S1.wild(Y, X, Z, ind.r, Y.r)
@@ -301,12 +311,12 @@ batch.ReMeasure.S1.res = function(Y, X, Z, ind.r, Y.r) {
 #' @export
 #'
 batch.ReMeasure.S1.wild = function(Y, X, Z, ind.r, Y.r) {
-  ind0 <- X == 0
-  ind1 <- X == 1
-  Yc1 <- Y[ind0]
-  Yt2 <- Y[ind1]
-  Zc1 <- Z[ind0, , drop = F]
-  Zt2 <- Z[ind1, , drop = F]
+  ind0 = X == 0
+  ind1 = X == 1
+  Yc1 = Y[ind0]
+  Yt2 = Y[ind1]
+  Zc1 = Z[ind0, , drop = F]
+  Zt2 = Z[ind1, , drop = F]
   Zc2 = Zc1[ind.r, , drop = F]
   Yc2 = Y.r
   Estimate = Estimate_ReMeasure_S1_Wild(Zc1, Zt2, Zc2, Yc1, Yt2, Yc2, ind.r, B = 1000)

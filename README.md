@@ -6,10 +6,6 @@ We maximize the joint the model to obtain estimates of parameters like the true 
 # Installation 
 The package can be installed using the following code.
 ```{r}
-install.packages(BatchReMeasure)
-```
-or
-```{r}
 devtools::install_github('yehanxuan/BatchReMeasure')
 library(BatchReMeasure)
 ```
@@ -34,7 +30,7 @@ r2 = 0.6
 a0 = 0.5
 a1 = 0.5
 ```
-Simulate the data 
+Simulate the data, where Y is the response vector for all control and case samples, Z is the design matrix, and ind.r is the index for control samples in the first batch that are remeasured. Y.r is the response vector for remeasured samples whose length is less or equal to the control sample size
 ```{r}
 X =  as.numeric(gl(2, n / 2)) - 1
 Z <- cbind(rep(1, n), rnorm(n))
@@ -45,7 +41,8 @@ Et <- rnorm(n, sd = ifelse (X == 0, sqrt(v1), sqrt(v2)))
 Y <- Z %*% b + cbind(X, X) %*% c(a0, a1) + Et
 Z.r.a <- Z[1 : (n / 2), ]
 Et.r.a <- Et[1 : (n / 2)]
-Y.r.a <- a1 + Z.r.a %*% b + r2 * sqrt(v2) * Et.r.a/ sqrt(v1) + rnorm(n/2, sd = sqrt( (1 - r2^2) * v2 ) )
+Y.r.a <- a1 + Z.r.a %*% b + r2 * sqrt(v2) * Et.r.a/ sqrt(v1) + 
+rnorm(n/2, sd = sqrt( (1 - r2^2) * v2 ) )
 ind.r <- 1:n1
 Y.r = Y.r.a[ind.r]
 ```

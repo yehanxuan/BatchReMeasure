@@ -8,15 +8,18 @@ except that the generic optimization methods are used like BFGS or conjugate gra
 batch.correct.r1(Y, X, Z, ind.r, Y.r, start = NULL, method = "BFGS")
 }
 \arguments{
-\item{Y}{the response vector of control and case samples}
+\item{Y}{the response vector for both control and case samples}
 
-\item{X}{binary vector indicate the control or case}
+\item{X}{binary vector indicates control/case status.
+X = 0 represents control, X = 1 represents case}
 
-\item{Z}{model matrix (sample x variable dimensions)}
+\item{Z}{model matrix (sample x variable dimensions) consists of covariates that affect the response}
 
-\item{ind.r}{index of remeasured samples}
+\item{ind.r}{index for samples remeasured from control samples in the first batch.
+The length of the index should be less or equal to the sample size of control samples in the first batch}
 
-\item{Y.r}{the response vector of remeasured samples}
+\item{Y.r}{the response vector of remeasured samples.
+Due to batch effects, it is usually not equal to the responses of corresponding control samples in the first batch}
 
 \item{start}{the initial value of parameters, default is NULL}
 
@@ -35,15 +38,15 @@ except that the generic optimization methods are used like BFGS or conjugate gra
 n = 100; n1 = 10 ;r1 = 1; r2 = 0.6;a0 = 0.8; a1 = 0.5
 v1 = r1^2; v2 = 1
 X =  as.numeric(gl(2, n / 2)) - 1
-Z <- cbind(rep(1, n), rnorm(n))
-b <- c(0, -0.5)
-Et <- rnorm(n, sd = ifelse (X == 0, sqrt(v1), sqrt(v2)))
-Y <- Z \%*\% b + cbind(X, X) \%*\% c(a0, a1) + Et
-Z.r.a <- Z[1 : (n / 2), ]
-Et.r.a <- Et[1 : (n / 2)]
-Y.r.a <- a1 + Z.r.a \%*\% b +
+Z = cbind(rep(1, n), rnorm(n))
+b = c(0, -0.5)
+Et = rnorm(n, sd = ifelse (X == 0, sqrt(v1), sqrt(v2)))
+Y = Z \%*\% b + cbind(X, X) \%*\% c(a0, a1) + Et
+Z.r.a = Z[1 : (n / 2), ]
+Et.r.a = Et[1 : (n / 2)]
+Y.r.a = a1 + Z.r.a \%*\% b +
 r2 * sqrt(v2) * Et.r.a/ sqrt(v1) + rnorm(n/2, sd = sqrt( (1 - r2^2) * v2 ) )
-ind.r <- 1:n1
+ind.r = 1:n1
 Y.r = Y.r.a[ind.r]
 # estimate the parameters
 Estimate = batch.correct.r1(Y, X, Z, ind.r, Y.r)

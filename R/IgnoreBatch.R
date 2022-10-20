@@ -114,9 +114,10 @@ Estimate_Ignore_S1 = function(Zc1, Zt2, Yc1, Yt2, tol.c = 1e-7,
 
 #' Direct estimate the true effect and batch effect ignoring the batch effect
 #'
-#' @param Y the response vector of control and case samples
-#' @param X binary vector indicates control/case status
-#' @param Z model matrix (sample x variable dimensions)
+#' @param Y the response vector for both control and case samples
+#' @param X binary vector indicates control/case status.
+#' X = 0 represents control, X = 1 represents case
+#' @param Z model matrix (sample x variable dimensions) consists of covariates that affect the responses
 #'
 #' @return The estimates of coefficients
 #'
@@ -125,10 +126,10 @@ Estimate_Ignore_S1 = function(Zc1, Zt2, Yc1, Yt2, tol.c = 1e-7,
 #' n = 100; r1 = 2; r2 = 0.6;a0 = 0.5; a1 = 0.5
 #' v1 = r1^2; v2 = 1
 #' X =  as.numeric(gl(2, n / 2)) - 1
-#' Z <- cbind(rep(1, n), rnorm(n))
-#' b <- c(0, -0.5)
-#' Et <- rnorm(n, sd = ifelse (X == 0, sqrt(v1), sqrt(v2)))
-#' Y <- Z %*% b + cbind(X, X) %*% c(a0, a1) + Et
+#' Z = cbind(rep(1, n), rnorm(n))
+#' b = c(0, -0.5)
+#' Et = rnorm(n, sd = ifelse (X == 0, sqrt(v1), sqrt(v2)))
+#' Y = Z %*% b + cbind(X, X) %*% c(a0, a1) + Et
 #' # estimate the parameters
 #' res = batch.Ignore.S1(Y, X, Z)
 #' res$a0
@@ -138,12 +139,12 @@ Estimate_Ignore_S1 = function(Zc1, Zt2, Yc1, Yt2, tol.c = 1e-7,
 #'
 batch.Ignore.S1 = function(Y, X, Z) {
 
-  ind0 <- X == 0
-  ind1 <- X == 1
-  Yc1 <- Y[ind0]
-  Yt2 <- Y[ind1]
-  Zc1 <- Z[ind0, , drop = F]
-  Zt2 <- Z[ind1, , drop = F]
+  ind0 = X == 0
+  ind1 = X == 1
+  Yc1 = Y[ind0]
+  Yt2 = Y[ind1]
+  Zc1 = Z[ind0, , drop = F]
+  Zt2 = Z[ind1, , drop = F]
   Estimate = Estimate_Ignore_S1(Zc1, Zt2, Yc1, Yt2)
   a0H = Estimate$a0
   a0Var = Estimate$a0Var
@@ -152,7 +153,7 @@ batch.Ignore.S1 = function(Y, X, Z) {
   sigma1H = Estimate$sigma1
   sigma2H = Estimate$sigma2
   objVec = Estimate$objVec
-  pv <- 2 * stats::pnorm(-abs(a0H / sqrt(a0Var)))
+  pv = 2 * stats::pnorm(-abs(a0H / sqrt(a0Var)))
   Time = Estimate$Time
   return(list("a0" = a0H, "a0Var" = a0Var, "beta" = betaH, "rho" = rhoH, "p.value" = pv,
               "sigma1" = sigma1H, "sigma2" = sigma2H, "objVec" = objVec, "Time" = Time))
