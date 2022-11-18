@@ -1,17 +1,16 @@
 # BatchReMeasure
-Correct Batch effect by remeasure samples in completely confounded case-control studies. Currently, we only consider the control and case samples are collected in the first and second batches, respectively, and a subset of control samples are re-measured in the second batch.
-We maximize the joint the model to obtain estimates of parameters like the true effects, batch effects. This package can evaluate the power of the developed procedure and provide a power calculation tool. 
+This package develops methods for correcting the Batch effect by remeasuring samples in completely confounded case-control studies. Currently, we consider the control and case samples collected in the first and second batches, respectively, and a subset of control samples are remeasured in the second batch. We maximize the joint model to obtain estimates of parameters like the true and batch effects. In addition, this package can evaluate the power of the developed procedure and provide a power calculation tool. 
 
 
 # Installation 
-The package can be installed using the following code.
+The package can be installed using the following code
 ```{r}
 devtools::install_github('yehanxuan/BatchReMeasure')
 library(BatchReMeasure)
 ```
 
 # Example with simulated data 
-The following script estimates the true and batch effects on a simulated data. We have both the R-version remeasure functions and the more computationally efficient C++ wrapper.
+The following script estimates the true and batch effects on simulated data. We have both the R-version remeasure functions and the more computationally efficient C++ wrapper.
 ```{r}
 # Loading packages 
 library(RConics)
@@ -19,9 +18,7 @@ library(RcppArmadillo)
 library(Rcpp)
 library(BatchReMeasure)
 ```
-Set sample size n=100 and remeasured sample size n1=40.
-Samples consists of 50 control samples and 50 case samples.
-Set the std of the first batch as 2 and the std of the second batch as 1; The correlation, true effect, batch effect are set as 0.6, 0.5 and 0.5, respectively 
+Set sample size n=100 and remeasured sample size n1=40. Samples consist of 50 control samples and 50 case samples. Set the std of the first batch as 2 and the std of the second batch as 1; The correlation, true effect, and batch effect are set as 0.6, 0.5, and 0.5, respectively
 ```{r}
 n = 100
 n1 = 40 
@@ -30,7 +27,7 @@ r2 = 0.6
 a0 = 0.5
 a1 = 0.5
 ```
-Simulate the data, where Y is the response vector for all control and case samples, Z is the design matrix, and ind.r is the index for control samples in the first batch that are remeasured. Y.r is the response vector for remeasured samples whose length is less or equal to the control sample size
+Simulate the data, where Y is the response vector for all control and case samples, Z is the design matrix, and ind.r is the index for control samples remeasured in the first batch. Y.r is the response vector for remeasured samples whose length is less or equal to the control sample size
 ```{r}
 X =  as.numeric(gl(2, n / 2)) - 1
 Z <- cbind(rep(1, n), rnorm(n))
@@ -59,7 +56,7 @@ Estimate = batch.Batch2.S1(Y, X, Z, ind.r, Y.r)
 ```
 If we ignore the batch effect, simply run
 ```{r}
-Estimate = batch.Ignore.S1(Y, X, Z, ind.r, Y.r)
+Estimate = batch.Ignore.S1(Y, X, Z)
 ```
 The bootstrap method is also provided to improve the estimation of uncertainty
 ```{r}
